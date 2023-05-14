@@ -3,7 +3,7 @@
 ## Contents
 
 - [RDA](#RDA)
-    - [분석 목적](#분석 목적)
+    - [분석 목적](#분석-목적)
     - [RDA소개](#RDA-소개)
 - [EM and Gibbs](#em-and-gibbs)
 - [따릉이](#따릉이)
