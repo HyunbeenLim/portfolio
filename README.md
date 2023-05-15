@@ -92,6 +92,15 @@ $\lambda$ 값이 1에 가까워질 수록 분류선에 필요한 추정량들이
 
 ![RDA_realdata](https://github.com/HyunbeenLim/portfolio/assets/133561846/4171501c-24eb-4c77-94ed-9ea2877a7cc4)
 
+분류를 진행하기 앞서 데이터의 차원이 크기 때문에 QDA, LDA 방법보다 regularization parameter들이 있는 RDA의 성능이 좋을 것이라 예상할 수 있으며, 그룹 별 분산이 같을 것이라 생각되지 않기 때문에 $\lambda$의 값이 1보단 0에 가깝고 $\gamma$의 값은 1에 가까울 것이라 예상하였습니다.
+
+![RDA_real_results](https://github.com/HyunbeenLim/portfolio/assets/133561846/ad598445-704f-457c-b370-28f42c2c9b93)
+
+얻은 결과는 예상대로 RDA의 성능이 좋고 $\lambda$ 값이 1보단 0에 가까운 것을 보이지만, $\gamma$ 값이 0에 더 가까운 모습을 보이고 있습니다.
+
+따라서, RDA는 데이터의 차원이 클 때에 일반적으로 LDA, QDA보다 좋은 성능을 보임을 알 수 있으며 특히나 데이터의 차원이 크면서 그룹 별 분산이 다를 경우에는 LDA는 물론 QDA의 성능마저 떨어지기에 RDA를 선택하는 것이 적절하다고 생각합니다.
+
+물론 데이터의 차원이 작거나, 큼에도 표본의 크기가 클 때, 그룹 별 분산이 별 다르지 않다고 생각될 때엔 LDA 방법을 사용하는 것이 해석에 더 용이하기에 데이터의 특징에 따라 적절한 방법론을 선택할 필요가 있다고 생각합니다.
 
 
 ## EM and Gibbs
