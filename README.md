@@ -11,7 +11,7 @@
     - [Gaussian Mixture Model](#gaussian-mixture-model)
     - [EM과 Gibbs 소개](#em과-gibbs-소개)
     - [Simulation](#simulation)
-    - [부동산 매매가 분석](#부동산-매매가-분석)
+    - [부동산 매매가 분석](#부동산)
 - [따릉이](#따릉이)
 - [간호대학 학생들의 학습성과](#간호대학-학생들의-학습성과)
 
