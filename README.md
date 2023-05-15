@@ -8,6 +8,10 @@
     - [Simulation Study](#Simulation-study)
     - [Application](#Application)
 - [EM and Gibbs](#em-and-gibbs)
+    - [EM과 Gibbs 소개](#em과-gibbs-소개)
+    - [Gaussian Mixture Model](#gaussian-mixture-model)
+    - [Simulation](#simulation)
+    - [부동산 매매가 분석](#부동산-매매가-분석)
 - [따릉이](#따릉이)
 - [간호대학 학생들의 학습성과](#간호대학-학생들의-학습성과)
 
@@ -106,7 +110,15 @@ $\lambda$ 값이 1에 가까워질 수록 분류선에 필요한 추정량들이
 ## EM and Gibbs
 
 
+### EM과 Gibbs 소개
 
+EM 알고리즘은 일반적으로 mode-finding 알고리즘의 한 종류이며 가능도함수를 최대화하는 모수의 추정량을 구하는 알고리즘입니다.
+
+Gibb's Sampling 방법은 베이지안 방법의 하나로, 사후분포를 추정하는 과정입니다.
+
+### Gaussian Mixture Model
+### Simulation
+### 부동산 
 
 ## 따릉이
 
