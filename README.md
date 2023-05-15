@@ -187,6 +187,7 @@ GMM에서 유의할 사항은 improper prior를 부여할 시 posterior 또한 i
 
 ![sim1_conv](https://github.com/HyunbeenLim/portfolio/assets/133561846/892103ce-cd2e-48cf-868d-c6741f46ad18)
 
+
 보시는 바와 같이 Gibbs sampling에서의 추정이 안정적인 것을 확인할 수 있습니다.
 
 
