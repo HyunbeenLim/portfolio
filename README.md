@@ -8,8 +8,8 @@
     - [Simulation Study](#Simulation-study)
     - [Application](#Application)
 - [EM and Gibbs](#em-and-gibbs)
-    - [EM과 Gibbs 소개](#em과-gibbs-소개)
     - [Gaussian Mixture Model](#gaussian-mixture-model)
+    - [EM과 Gibbs 소개](#em과-gibbs-소개)
     - [Simulation](#simulation)
     - [부동산 매매가 분석](#부동산-매매가-분석)
 - [따릉이](#따릉이)
@@ -110,13 +110,18 @@ $\lambda$ 값이 1에 가까워질 수록 분류선에 필요한 추정량들이
 ## EM and Gibbs
 
 
+### Gaussian Mixture Model
+
+Gaussian Mixture Model은 정규분포가 결합된 형태로, 분석할 데이터의 분포가 여러개의 mode를 가질 때에 가정하는 분포입니다.
+
+저희는 해당 분포를 이용해 EM 알고리즘과 Gibb's sampling의 모수 추정(사후 분포 추정) 성능을 비교하고자 하였습니다.
+
 ### EM과 Gibbs 소개
 
 EM 알고리즘은 일반적으로 mode-finding 알고리즘의 한 종류이며 가능도함수를 최대화하는 모수의 추정량을 구하는 알고리즘입니다.
 
 Gibb's Sampling 방법은 베이지안 방법의 하나로, 사후분포를 추정하는 과정입니다.
 
-### Gaussian Mixture Model
 ### Simulation
 ### 부동산 
 
