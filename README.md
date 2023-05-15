@@ -5,6 +5,8 @@
 - [RDA](#RDA)
     - [분석 목적](#분석-목적)
     - [RDA소개](#RDA-소개)
+    - [Simulation Study](#Simulation-study)
+    - [Application](#Application)
 - [EM and Gibbs](#em-and-gibbs)
 - [따릉이](#따릉이)
 - [간호대학 학생들의 학습성과](#간호대학-학생들의-학습성과)
@@ -44,6 +46,13 @@ $\lambda$가 1이라면 LDA, $\lambda$가 0이라면 QDA 방법이 됩니다.
 
 
 $\gamma$를 포함해 최종적으로 그룹별 분산 추정량을 $\hat{\Sigma_k}(\lambda, \gamma) = (1-\gamma)\hat{\Sigma_k}(\lambda) + {\gamma \over p}tr\left[\hat{\Sigma_k}(\lambda)\right]I$ 로 쓸 수 있습니다. 여기서 $\gamma$는 $\hat{\Sigma_k}(\lambda)$의 고유값에 곱해지는 것을 볼 수 있는데, 큰 고유값은 줄이고 작은 고유값은 늘리는 역할로 표본을 기반으로 추정한 고유값의 편향을 조절할 수 있습니다.
+
+### Simulation Study
+
+
+### Application
+
+
 
 ## EM and Gibbs
 
