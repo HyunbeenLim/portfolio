@@ -188,7 +188,7 @@ GMM에서 유의할 사항은 improper prior를 부여할 시 posterior 또한 i
 ![sim1_conv](https://github.com/HyunbeenLim/portfolio/assets/133561846/892103ce-cd2e-48cf-868d-c6741f46ad18)
 
 
-보시는 바와 같이 Gibbs sampling에서의 추정이 안정적인 것을 확인할 수 있습니다.
+보시는 바와 같이 Gibbs sampling에서의 sampling이 안정적인 것을 확인할 수 있습니다.
 
 
 마지막으로 오분류율(%)를 구하였습니다. 오분류율은 EM 알고리즘에선 최종 추정된 $\gamma_{ic} = p(z_i = c|x)$값을, Gibbs Sampling에선 사후분포 기반 확률을 이용하였습니다. 
@@ -239,9 +239,49 @@ Gibbs sampling은 group1에 대해 47.50%, group2에 대해 58.48%, group3에 �
 따라서, 데이터가 overlap 된 정도가 적다면 EM 알고리즘이 Gibbs sampling 보다 조금 더 낫거나 비슷한 성능을 보이고 overlap 된 정도가 크고 표본의 개수가 많다면 Gibbs sampling 방법의 성능이 월등하다는 것을 알 수 있습니다.
 
 
-
-
 ### 부동산 
+
+다음은 실제 사례에 대해 적용을 해 보았습니다.
+
+저희가 작성한 코드는 1차원 데이터에 대한 군집화를 하기 위해 만들어졌으므로, 1차원 데이터만으로도 유의미한 결과를 얻을 수 있는 분석은 집 값 데이터 분석이라고 생각하였습니다.
+
+저희가 가져온 데이터는 크기가 44810인 2021년 서울 시 아파트 매매가 데이터이고, 사용할 정보는 제곱 미터 당 가격(만원)과 해당 아파트의 자치구 명입니다.
+
+![application_data](https://github.com/HyunbeenLim/portfolio/assets/133561846/49e7627a-5037-46ad-aff6-5e32a6d13161)
+
+첨부한 사진의 왼쪽에서 데이터의 대략적 정보를 확인할 수 있고, 오른쪽 그래프를 통해 데이터의 분포 그래프를 알 수 있습니다.
+데이터의 분포가 오른쪽 꼬리가 긴 정규 분포의 형태로 보이기에 저희는 이것을 근거로 데이터가 세 그룹을 가진 GMM을 따른다는 가정을 하는 것이 타당하다고 생각하였습니다.
+
+분석을 하기 위해 사용한 초기치는 세 그룹 모두 동일하게 평균이 1000, 분산이 200, 표본 내 그룹의 비율 ${1 \over 3}$으로, 사전분포의 모수는 $e_0 = 4, b_0 = 1000, B_0 = 1000000, c_0 = 1, C_0 = 1$으로 설정하였습니다.
+
+![app_res](https://github.com/HyunbeenLim/portfolio/assets/133561846/b17b9848-97d7-4476-9cf6-6b622e54d56e)
+
+얻은 결과를 바탕으로 그룹1, 그룹2, 그룹3 순서로 싼 가격에 매매된 아파트 그룹이라는 것을 알 수 있었고 추정한 9개의 모수 모두 두 방법론이 거의 동일한 값을 가진 것을 확인할 수 있었습니다. 
+
+![app_conv](https://github.com/HyunbeenLim/portfolio/assets/133561846/1bde6a92-d339-4e0e-ab87-ec40e1db3446)
+
+추정 과정을 그린 그래프 또한 Gibbs sampling 방법의 샘플링이 굉장히 안정적인 것을 확인할 수 있습니다.
+
+![app_em_est_den](https://github.com/HyunbeenLim/portfolio/assets/133561846/b1c90e69-734b-42e4-9dcf-93304b4b019e)
+EM 알고리즘으로 추정한 모수를 바탕으로 그린 분포 그래프와 그 합 그래프입니다.
+
+빨간색 그래프가 세 분포를 합친 그래프인데, 실제 데이터의 분포와 유사한 것을 보입니다.
+
+![app_gibbs_est_den](https://github.com/HyunbeenLim/portfolio/assets/133561846/ca28a906-f599-49d1-a5c6-9d6f4379887d)
+Gibbs sampling의 그룹 별 사후 분포와 그 합 그래프입니다.
+
+Gibbs sampling 또한 빨간 그래프가 실제 데이터의 분포와 유사합니다.
+
+
+가져온 데이터의 표본의 크며 분포 그래프만을 그려보았을 때와는 다르게 overlap 된 정도가 적기 때문에 좋은 결과를 얻었다고 결론을 낼 수 있겠습니다.
+
+마지막으로 EM 알고리즘의 E-step에서 정의된 $\gamma_{ic} = p(z_i = c|x)$를 활용하여 새로운 그래프를 그려보았습니다.
+
+![app_gam_graph](https://github.com/HyunbeenLim/portfolio/assets/133561846/08894ac0-7eab-48f4-8a6e-38ebf6075aa5)
+
+먼저 그래프는 분석을 통해 군집화를 완료한 후, 다시 각 데이터에 맞는 자치구를 인덱싱해 같은 자치구 별로 평균을 구한 확률 그래프입니다. 
+
+1그룹 맨 위 도봉구가 위치하고 있는데 이는 도봉구에서 2021년 매매된 아파트 중 거의 90%가 1그룹, 즉 가장 싼 가격에 매매된 아파트 그룹에 속한다고 해석할 수 있겠습니다.
 
 ## 따릉이
 
