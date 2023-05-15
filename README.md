@@ -118,7 +118,12 @@ Gaussian Mixture Model은 정규분포가 결합된 형태로, 분석할 데이�
 
 ### EM과 Gibbs 소개
 
+
 EM 알고리즘은 일반적으로 mode-finding 알고리즘의 한 종류이며 가능도함수를 최대화하는 모수의 추정량을 구하는 알고리즘입니다.
+
+먼저 simulation에 활용할 데이터는 Gaussian mixture model에서 추출하였으므로 EM 알고리즘의 추정을 위해선 GMM 분포의 확률밀도 함수 $P(x) = \Sigma_{c=1}^K \pi_cN(x|\mu_c, \Sigma_c)$를 알 필요가 있습니다. 여기서 $\pi_c$는 데이터에 K개의 그룹이 있을 때 그룹 c가 해당 데이터에서 차지하는 비율이며, 관측되지 않는 변수입니다.
+
+확률밀도함수를 다시 로그가능도함수로 바꾸어 준다면 $loglikelihood = \Sigma_{i = 1}^n \Sigma_{c = 1}^K I(z_i = c)\left\{log\pi_c + log N(x_i|\mu_c, \Sigma_c)\right\}$가 됩니다.
 
 Gibb's Sampling 방법은 베이지안 방법의 하나로, 사후분포를 추정하는 과정입니다.
 
