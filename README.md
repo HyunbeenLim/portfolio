@@ -152,10 +152,94 @@ GMM에서 유의할 사항은 improper prior를 부여할 시 posterior 또한 i
 
 ![Gibbs_para](https://github.com/HyunbeenLim/portfolio/assets/133561846/87977dd1-f461-41eb-8c46-3a12b80f3161)
 
-이며, 여기서 $S$는 EM에서의 변수 z와 같습니다.
+이며, 여기서 S는 EM에서의 변수 z와 같습니다.
 
 
 ### Simulation
+
+다음 실험입니다. 
+
+실험에 사용한 코드는 저희가 R에서 직접 작성한 코드를 사용하였고 데이터 생성은 R의 distr 패키지를 사용했습니다. 수렴 기준은 소수점 아래 5번째 자리로 하였습니다.
+
+실험에 사용한 데이터는 크게 두가지입니다.
+
+첫번째 데이터는 각 분포들이 overlap되지 않은, 즉 세 그룹이 잘 분리가 되어 데이터에 몇 개의 그룹이 존재하는지 잘 파악할 수 있는 데이터입니다.
+
+
+아래는 생성한 데이터의 빈도 그래프와 데이터 생성시 설정한 모수값입니다.
+
+![em_gibbs_data1](https://github.com/HyunbeenLim/portfolio/assets/133561846/8518407d-16f8-4f5c-b777-c775c0dbf6d4)
+
+
+추정하기 위해 설정한 초기치는 다음과 같습니다.
+
+![em_gibbs_sim1](https://github.com/HyunbeenLim/portfolio/assets/133561846/59b03d76-f366-4d18-a003-d001da86273e)
+
+
+해당 초기치를 바탕으로 저희가 작성한 EM 알고리즘과 Gibbs sampling 코드를 실행하였을 때 얻은 결과값입니다.
+
+![em_gibbs_sim1_re](https://github.com/HyunbeenLim/portfolio/assets/133561846/e3c4b0b0-dd7b-4eab-8e66-7860cf3bd606)
+
+위와 같이 잘 분리가 되어 있는 분포를 따르는 데이터에 대해서, EM 알고리즘과 Gibbs Sampling의 결과는 거의 유사한 모습을 보이는 것을 알 수 있습니다.
+
+
+또한 안정적인 추정이 되었는지 확인하기 위해 추정 과정에서의 각 iteration 별 추정량 그래프를 그려 보았습니다.
+
+![sim1_conv](https://github.com/HyunbeenLim/portfolio/assets/133561846/892103ce-cd2e-48cf-868d-c6741f46ad18)
+
+보시는 바와 같이 Gibbs sampling에서의 추정이 안정적인 것을 확인할 수 있습니다.
+
+
+마지막으로 오분류율(%)를 구하였습니다. 오분류율은 EM 알고리즘에선 최종 추정된 $\gamma_{ic} = p(z_i = c|x)$값을, Gibbs Sampling에선 사후분포 기반 확률을 이용하였습니다. 
+
+EM 알고리즘은 group1에 대해 10.33 %, group2에 대해 3.67%, group3에 대해 12.33%를 보였으며
+
+Gibbs Samlping은 group1에 대해 15.84 %, group2에 대해 6.53%, group3에 대해 17.75%를 보여 분리가 잘 된 분포를 따르는 데이터에 대해선 EM 알고리즘의 성능이 더 좋은 것을 확인할 수 있었습니다.
+
+더 정확한 비교를 위해 데이터 생성부터 추정까지 100번을 반복해 얻은 추정량의 bias와 mse의 평균을 구해보았습니다.
+
+![sim1_mc](https://github.com/HyunbeenLim/portfolio/assets/133561846/90a02ca9-d062-4155-b58e-51e0521678c9)
+
+상단의 표는 크기가 100인 데이터를 사용해 얻은 결과이며 하단의 표는 크기가 100인 데이터를 사용해 얻은 값입니다.
+
+표본에 크기에 상관 없이 bias와 mse 모두 작은 값인 것을 보아 분리가 잘 되어 있는 데이터에 대해선 두 방법의 성능 차이를 논하는 것은 큰 의미가 없다고 생각할 수 있겠습니다.
+
+
+다음 두번째 데이터는 데이터가 서로 overlap 되어 mode가 하나인 것처럼 보이는 데이터입니다. 
+데이터의 빈도 그래프와 생성할 때 입력한 값입니다.
+
+![data2](https://github.com/HyunbeenLim/portfolio/assets/133561846/2933ccc5-686a-433a-b344-4bbf881df094)
+보시는 바와 같이 overlap 된 정도가 심해 하나의 분포를 따르는 데이터처럼 보이는 것을 알 수 있습니다.
+
+추정을 위한 초기치는 이전 실험에 쓰인 값들과 동일하며 코드를 한번 씩 실행했을 때의 결과값입니다.
+
+![sim2](https://github.com/HyunbeenLim/portfolio/assets/133561846/c872152d-ec07-4216-9352-ba58258346c0)
+
+위와 같이 겹친 정도가 심한 데이터는 그렇지 않은 데이터에 비해 추정값이 실제값과 거리가 굉장히 먼 것을 확인할 수 있었습니다. 특히나 두번째 그룹에 대해 추정이 불안정한 것을 알 수 있습니다.
+
+
+이 실험에서도 수렴 그래프를 그려보았습니다.
+
+![sim2_conv](https://github.com/HyunbeenLim/portfolio/assets/133561846/5ff88df2-5e40-446b-bb98-72015064cdaa)
+
+그래프를 본다면, Gibbs sampling에서의 사후분포의 모수가 iteration 별로 굉장히 불안정한 것을 확인할 수 있었습니다.
+
+이때의 오분류율은 EM 알고리즘은 group1에 대해 19.33%, group2에 대해 100%, group3에 대해 10.33%를,
+
+Gibbs sampling은 group1에 대해 47.50%, group2에 대해 58.48%, group3에 대해 45.67% 를 보여 오분류율이 굉장히 증가한 것을 확인할 수 있었습니다.
+
+
+다시 더 정확한 결과를 위해 100번 반복한 결과를 확인해 보겠습니다.
+
+![sim2_mc](https://github.com/HyunbeenLim/portfolio/assets/133561846/af85518b-dd47-4821-b322-1feb023eccc6)
+
+여기서 깁스 샘플링 방법은 샘플 사이즈가 커지면서 큰 성능 향상을 보인 것에 반해 EM 알고리즘은 샘플 사이즈에 상관 없이 평균 mse 값이 매우 큰 것을 확인할 수 있었습니다.
+
+따라서, 데이터가 overlap 된 정도가 적다면 EM 알고리즘이 Gibbs sampling 보다 조금 더 낫거나 비슷한 성능을 보이고 overlap 된 정도가 크고 표본의 개수가 많다면 Gibbs sampling 방법의 성능이 월등하다는 것을 알 수 있습니다.
+
+
+
+
 ### 부동산 
 
 ## 따릉이
