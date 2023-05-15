@@ -27,7 +27,16 @@ LDA의 분류선은 $\sigma_k\left(x\right) = x^T\Sigma^{-1}\mu_k-{1\over 2}\mu^
 
 QDA의 분류선은 $\sigma_k\left(x\right) = -{1\over 2}\left(x - \mu_k\right)^T\Sigma_k^{-1}\left(x - \mu_k\right) - {1\over 2}log|\Sigma_k| + log\pi_k$로 쓸 수 있습니다.
 
-RDA의 분류선은 $\sigma_k\left(x\right) = \left(x - \mu_k\right)^T\hat{\Sigma_k}^{-1}\left(\lambda, \gamma\right)\left(x - \mu_k\right) + log|\hat{\Sigma_k}\left(\lambda, \gamme\right)| - 2log\pi_k$으로 쓸 수 있는데, \\ 여기
+RDA의 분류선은 $\sigma_k\left(x\right) = \left(x - \mu_k\right)^T\hat{\Sigma_k}^{-1}\left(\lambda, \gamma\right)\left(x - \mu_k\right) + log|\hat{\Sigma_k}\left(\lambda, \gamma\right)| - 2log\pi_k$으로 쓸 수 있는데,
+여기서 $\hat{\Sigma_k} = {S_k \over W_k}$이며, k번째 그룹의 표본 수를 나타내는$W_k$와 $S_k = \Sigma_{c(\nu)=k}w_{\nu} X_{\nu}$를 이용하여 각 그룹별 분산을 추정합니다.
+
+Friedman은 또한 RDA에 두 가지의 hyper parameter를 제안하였는데 이 모수들을 조절하여 RDA의 성능을 끌어올릴 수 있습니다.
+
+먼저 $\lambda$로 그룹별 분산을 조절하고 $\gamma$로 shrinkage를 조절할 수 있습니다.
+
+$\lambda$를 포함한 각 그룹별 분산은 $$\hat{\Sigma_k (\lambda)} &= S_k(\lambda)/W_k(\lambda) \\ S_k(\lambda) &= (1 - \lambda)S_k + \lambda S \\ W_k(\lambda) &= (1-\lambda)W_k + \lambda W$$ 이며, 여기서 $\lambda$가 1이라면 LDA, $\lambda$가 0이라면 QDA 방법이 됩니다.
+
+$\gamma$를 포함해 최종적으로 그룹별 분산 추정량을 $\hat{\Sigma_k (\lambda, \gamma)} = (1-\gamma)\hat{\Sigma_k(\lambda)} + {\gamma \over p}tr\left[\hat{\Sigma_k(\lambda)}\right]I$ 로 쓸 수 있습니다. 여기서 $\gamma$는 $\hat{\Sigma_k(\lambda)}$의 고유값에 곱해지는 것을 볼 수 있는데, 큰 고유값은 줄이고 작은 고유값은 늘리는 역할로 표본을 기반으로 추정한 고유값의 편향을 조절할 수 있습니다.
 
 ## EM and Gibbs
 
