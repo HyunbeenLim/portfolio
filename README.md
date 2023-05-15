@@ -57,6 +57,9 @@ $\gamma$를 포함해 최종적으로 그룹별 분산 추정량을 $\hat{\Sigma
 
 각 시뮬레이션은 데이터의 차원이 커질 수록 LDA, QDA, RDA의 분류 성능을 확인하기 위해 p가 6, 10, 20, 30일 때로 구분하여 진행하였습니다.
 
+먼저 모든 그룹의 분산이 같은 표본에 대한 시뮬레이션 결과입니다.
+
+![RDA_Simulation1_results](https://github.com/HyunbeenLim/portfolio/assets/133561846/0228eefb-3886-4e7d-9709-866aa9a7c6c3)
 
 
 ### Application
