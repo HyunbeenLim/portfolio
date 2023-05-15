@@ -121,11 +121,39 @@ Gaussian Mixture Model은 정규분포가 결합된 형태로, 분석할 데이�
 
 EM 알고리즘은 일반적으로 mode-finding 알고리즘의 한 종류이며 가능도함수를 최대화하는 모수의 추정량을 구하는 알고리즘입니다.
 
-먼저 simulation에 활용할 데이터는 Gaussian mixture model에서 추출하였으므로 EM 알고리즘의 추정을 위해선 GMM 분포의 확률밀도 함수 $P(x) = \Sigma_{c=1}^K \pi_cN(x|\mu_c, \Sigma_c)$를 알 필요가 있습니다. 여기서 $\pi_c$는 데이터에 K개의 그룹이 있을 때 그룹 c가 해당 데이터에서 차지하는 비율이며, 관측되지 않는 변수입니다.
+먼저 simulation에 활용할 데이터는 Gaussian mixture model에서 추출하였으므로 EM 알고리즘의 추정을 위해선 GMM 분포의 확률밀도 함수 $P(x) = \Sigma_{c=1}^K \pi_cN(x|\mu_c, \sigma_c)$를 알 필요가 있습니다. 여기서 $\pi_c$는 데이터에 K개의 그룹이 있을 때 그룹 c가 해당 데이터에서 차지하는 비율이며, 관측되지 않는 변수입니다.
 
-확률밀도함수를 다시 로그가능도함수로 바꾸어 준다면 $loglikelihood = \Sigma_{i = 1}^n \Sigma_{c = 1}^K I(z_i = c)\{log\pi_c + log N(x_i|\mu_c, \Sigma_c)\}$가 됩니다.
+확률밀도함수를 다시 로그가능도함수로 바꾸어 준다면 $loglikelihood = \Sigma_{i = 1}^n \Sigma_{c = 1}^K I(z_i = c)[log\pi_c + log N(x_i|\mu_c, \sigma_c)]$가 됩니다.
+여기서 $z_i$는 i번째 관측치가 group c에 속할 때 1이 되는 확률변수($p(z_i = c) = \pi_c$)입니다.
 
-Gibb's Sampling 방법은 베이지안 방법의 하나로, 사후분포를 추정하는 과정입니다.
+다음은 EM 알고리즘의 E-step입니다.
+
+변수 z가 missing data로 다뤄질 수 있기 때문에 $z|x$에 대한 조건부 기댓값을 먼저 구해줍니다.
+
+$E_{z|x}(loglikelihood) = \Sigma_{i = 1}^n \Sigma_{c = 1}^K E_{z|x}\left(I(z_i = c)\right)[log\pi_c + log N(x_i|\mu_c, \sigma_c)] = \Sigma_{i = 1}^n \Sigma_{c = 1}^K p(z_i = c|x)[log\pi_c + log N(x_i|\mu_c, \sigma_c)]$가 됩니다.
+
+이 식에서 $p(z_i = c|x)$를 $p(z_i = c|x) = {p(z_i = c,x) \over p(x)} = {p(z_i = c) p(x|z_i = c) \over p(x)} = {\pi_c N(x_i|\mu_c \Sigma_c) \over \sigma_{c=1}^K \pi_c N(x_i|\mu_c, \sigma_c)} = \gamma_{ic}$로 정의하겠습니다.
+
+따라서 $E_{z|x}(loglikelihood) = \Sigma_{i = 1}^n \Sigma_{c = 1}^K \gamma_{ic}log\pi_c + \Sigma_{i = 1}^n \Sigma_{c = 1}^K \gamma_{ic}logN(x_i|\mu_c, \sigma_C)$가 됩니다.
+
+E-step으로 구한 식을 라그랑지 방법을 이용해(분량 상 생략하겠습니다.) 최대로 만드는 추정량을 구하면
+
+![EM_추정](https://github.com/HyunbeenLim/portfolio/assets/133561846/84bf8a59-75e5-4f28-b026-84baaa5cd596)
+
+이런 결과를 얻게 됩니다.
+
+
+Gibb's Sampling 방법은 베이지안 방법의 하나로, 사후분포를 추정합니다.
+베이지안 방법은 사전분포에 대한 가정이 필요하므로 저희는 좀 더 검증된 사전분포를 이용하는 것이 적절하다 판단되어, Schnatter(2006)의 책을 참고하였습니다.
+
+GMM에서 유의할 사항은 improper prior를 부여할 시 posterior 또한 improper density가 되어 추정에 어려움이 따르기 때문에 Conjugate, Independent Prior를 부여하여 추정하는 대신 사전분포의 영향이 약하지게 모수를 가정하여 추정하였습니다.
+
+이하 책을 참고하여 부여한 사전분포와 얻은 사후분포입니다.
+
+![Gibbs_para](https://github.com/HyunbeenLim/portfolio/assets/133561846/87977dd1-f461-41eb-8c46-3a12b80f3161)
+
+이며, 여기서 $S$는 EM에서의 변수 z와 같습니다.
+
 
 ### Simulation
 ### 부동산 
