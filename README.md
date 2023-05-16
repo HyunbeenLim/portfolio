@@ -149,7 +149,7 @@ Gibb's Sampling 방법은 베이지안 방법의 하나로, 사후분포를 추�
 
 GMM에서 유의할 사항은 improper prior를 부여할 시 posterior 또한 improper density가 되어 추정에 어려움이 따르기 때문에 Conjugate, Independent Prior를 부여하여 추정하는 대신 사전분포의 영향이 약하지게 모수를 가정하여 추정하였습니다.
 
-이하 책을 참고하여 부여한 사전분포와 얻은 사후분포입니다.
+이하 책을 참고한 사전분포와 그에 따른 .
 
 ![Gibbs_para](https://github.com/HyunbeenLim/portfolio/assets/133561846/87977dd1-f461-41eb-8c46-3a12b80f3161)
 
