@@ -133,7 +133,7 @@ EM 알고리즘은 일반적으로 mode-finding 알고리즘의 한 종류이며
 
 $E_{z|x}(loglikelihood) = \Sigma_{i = 1}^n \Sigma_{c = 1}^K E_{z|x}\left(I(z_i = c)\right)[log\pi_c + log N(x_i|\mu_c, \sigma_c)] = \Sigma_{i = 1}^n \Sigma_{c = 1}^K p(z_i = c|x)[log\pi_c + log N(x_i|\mu_c, \sigma_c)]$가 됩니다.
 
-이 식에서 $p(z_i = c|x)$를 $p(z_i = c|x) = {p(z_i = c,x) \over p(x)} = {p(z_i = c) p(x|z_i = c) \over p(x)} = {\pi_c N(x_i|\mu_c \Sigma_c) \over \sigma_{c=1}^K \pi_c N(x_i|\mu_c, \sigma_c)} = \gamma_{ic}$로 정의하겠습니다.
+이 식에서 $p(z_i = c|x)$를 $p(z_i = c|x) = {p(z_i = c,x) \over p(x)} = {p(z_i = c) p(x|z_i = c) \over p(x)} = {\pi_c N(x_i|\mu_c \Sigma_c) \over \Sigma_{c=1}^K \pi_c N(x_i|\mu_c, \sigma_c)} = \gamma_{ic}$로 정의하겠습니다.
 
 따라서 $E_{z|x}(loglikelihood) = \Sigma_{i = 1}^n \Sigma_{c = 1}^K \gamma_{ic}log\pi_c + \Sigma_{i = 1}^n \Sigma_{c = 1}^K \gamma_{ic}logN(x_i|\mu_c, \sigma_C)$가 됩니다.
 
