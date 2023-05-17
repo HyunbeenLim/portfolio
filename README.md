@@ -374,7 +374,7 @@ $\beta^* = argmin_{\beta}\left[g\left(E[Y|X]\right) - \beta_0 - \Sigma_{i=1}^p \
 
 이후 Grid search를 실시하기 위해 사용한 초모수의 범위는 다음과 같습니다.
 
-$\lambda^{-1} : \left\{0, 0.001, 0.002, \cdots, 0.1 \right\}, \alpha_1 = \left\{0.5, 0.7, 0.9\right\}$
+$\lambda^{-1} : \left{0, 0.001, 0.002, \cdots, 0.1 \right}, \alpha_1 = \left{0.5, 0.7, 0.9\right}$
 
 
 
