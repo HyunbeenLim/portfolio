@@ -352,7 +352,7 @@ Gibbs sampling 또한 빨간 그래프가 실제 데이터의 분포와 유사�
 
 $g\left(E\left[Y|X\right]\right) = \beta_0 + \beta_1X_1 + \cdots + \beta_pX_p$
 
-여기서 항등함수 $g(x) = x$를 사용하면 선형회귀 모형이 되며 로짓함수 $g(x) = log\left({p \over (1 - p)}\right)$를 사용하면 로지스틱 회귀 모형이 되어 저희는 로짓함수를 사용하였습니다.
+여기서 항등함수 $g(x) = x$를 사용하면 선형회귀 모형이 되며 로짓함수 $g(x) = log\left({p \over (1 - p)}\right)$를 사용하면 로지스틱 회귀 모형이 되어 로짓함수를 사용하였습니다.
 
 일반선형회귀처럼 다른 변수들을 통제한 채 한 변수의 효과를 파악할 수 있는 장점을 GLM 역시 가지고 있습니다.
 
@@ -370,11 +370,11 @@ GLM과 동일하게 g에 로짓함수를 사용했습니다.
 
 $\beta^* = argmin_{\beta}\left[g\left(E[Y|X]\right) - \beta_0 - \Sigma_{i=1}^p \beta_i X_i\right] + \lambda \left[\alpha_1 \Sigma_{i=1}^p ||\beta_i|| + \alpha_2 \Sigma_{i=1}^p ||\beta_i||^2 \right], \alpha_1 + \alpha_2 = 1$
 
-모수 $\lambda, \alpha1$의 선택은 k-fold cross-validation을 진행하였고, train : test = 7 : 3으로 나누어 train 데이터를 10개의 fold로 나누었습니다.
+모수 $\lambda, \alpha_1$의 선택은 k-fold cross-validation을 진행하였고, train : test = 7 : 3으로 나누어 train 데이터를 10개의 fold로 나누었습니다.
 
 이후 Grid search를 실시하기 위해 사용한 초모수의 범위는 다음과 같습니다.
 
-$\lambda^{-1} : {0, 0.001, 0.002, \cdots, 0.1}, \alpha_1 = {0.5, 0.7, 0.9}$
+$\lambda^{-1} : \left\{0, 0.001, 0.002, \cdots, 0.1 \right\}, \alpha_1 = \left\{0.5, 0.7, 0.9\right\}$
 
 
 
