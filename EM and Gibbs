@@ -495,7 +495,7 @@ plot(mu_ematrix[,2], mu_ematrix[,3], xlab = "mu2", ylab = "mu3")
 
 # misclassification rate
 
-# data (used other generating functions to have data belong to certain group)
+# data (used another generating functions to have data belong to certain group)
 
 X1 = rnorm(300, 0, 10)
 X2 = rnorm(300, 10, 10)
