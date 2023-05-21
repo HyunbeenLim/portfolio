@@ -1,0 +1,890 @@
+# using R
+
+# source code
+
+## EM algorithm
+
+library(distr)
+
+EM = function(data, mu_old, sigma_old, pi_old, drawing = FALSE ,epsilon = 1e-4, maxiter = 10000){
+  
+  n = length(data)
+  k = length(mu_old)
+  
+  gamma = matrix(0, n, k)
+  
+  l1 = numeric()
+  l2 = numeric()
+  l3 = numeric()
+  
+  
+  mu_est = mu_old
+  sigma_est = sigma_old
+  pi_est = pi_old
+  
+  iter = 0
+  repeat{
+    iter = iter + 1
+    
+    #likelihood
+    for(i in 1:n){
+      l1[i] = dnorm(data[i], mu_old[1], sigma_old[1])
+      l2[i] = dnorm(data[i], mu_old[2], sigma_old[2])
+      l3[i] = dnorm(data[i], mu_old[3], sigma_old[3])
+    }
+    
+    deno = l1 * pi_old[1] + l2 * pi_old[2] + l3 * pi_old[3]
+    
+    gamma[, 1] = (l1 * pi_old[1]) / deno
+    gamma[, 2] = (l2 * pi_old[2]) / deno
+    gamma[, 3] = (l3 * pi_old[3]) / deno
+    
+    mu_new = numeric()
+    sigma_new = numeric()
+    pi_new = numeric()
+    
+    for(m in 1:k){
+      mu_new[m] = sum(gamma[, m] * data) / sum(gamma[, m])
+      pi_new[m] = sum(gamma[, m]) / n
+    }
+    
+    for(l in 1:k){
+      sigma_new[l] = sqrt(sum(gamma[, l] * ((data - mu_new[l])^2)) / sum(gamma[, l]))
+    }
+    
+    mu_est = rbind(mu_est, mu_new)
+    sigma_est = rbind(sigma_est, sigma_new)
+    pi_est = rbind(pi_est, pi_new)
+    
+    if(max(c(abs(mu_old - mu_new), abs(sigma_old - sigma_new), abs(pi_old - pi_new))) < epsilon || iter > maxiter) break
+    else{
+      mu_old = mu_new
+      sigma_old = sigma_new
+      pi_old = pi_new
+    }
+  }
+  #eliminate initial value because the difference between init and the value after first iteration is huge.
+  mu_est = mu_est[-1, ]
+  sigma_est = sigma_est[-1, ]
+  pi_est = pi_est[-1, ]
+  
+  if(drawing){
+    graph_matrix = cbind(mu_est, sigma_est, pi_est)
+    
+    x = seq(1, nrow(graph_matrix), 1)
+    
+    par(mfrow = c(3, 3))
+    #graph for group 1
+    plot(x, graph_matrix[, 1], type = 'l', col = 'red', ann = F)
+    title('mu in group 1', xlab = 'iteration', ylab = 'estimated value')
+    plot(x, graph_matrix[, 4], type = 'l', col = 'blue', ann = F)
+    title('sigma in group 1', xlab = 'iteration', ylab = 'estimated value')
+    plot(x, graph_matrix[, 7], type = 'l', col = 'green', ann = F)
+    title('pi in group 1', xlab = 'iteration', ylab = 'estimated value')
+    #graph for group2
+    plot(x, graph_matrix[, 2], type = 'l', col = 'red', ann = F)
+    title('mu in group 2', xlab = 'iteration', ylab = 'estimated value')
+    plot(x, graph_matrix[, 5], type = 'l', col = 'blue', ann = F)
+    title('sigma in group 2', xlab = 'iteration', ylab = 'estimated value')
+    plot(x, graph_matrix[, 8], type = 'l', col = 'green', ann = F)
+    title('pi in group 2', xlab = 'iteration', ylab = 'estimated value')
+    #graph for group 3
+    plot(x, graph_matrix[, 3], type = 'l', col = 'red', ann = F)
+    title('mu in group 3', xlab = 'iteration', ylab = 'estimated value')
+    plot(x, graph_matrix[, 6], type = 'l', col = 'blue', ann = F)
+    title('sigma in group 3', xlab = 'iteration', ylab = 'estimated value')
+    plot(x, graph_matrix[, 9], type = 'l', col = 'green', ann = F)
+    title('pi in group 3', xlab = 'iteration', ylab = 'estimated value')
+    
+  }
+  return(list(iterations = iter, mu = mu_new, sigma = sigma_new, pi = pi_new))
+}
+
+#=====================================================================================================================================
+
+# Gibbs sampling
+
+library(compositions)
+
+#===============Set initial values============
+
+#number of observations
+n = length(y)
+#when the number of mixture is 3
+k = 3
+i = 1
+s1 = rep(0,n)
+s2 = rep(0,n)
+s3 = rep(0,n)
+while (i <=n){
+  a =  runif(1,0,1)
+  if (a <pi_true[1]){
+    s1[i] = 1
+    s2[i ] = 0
+    s3[i] = 0
+  }
+  if (a >=pi_true[1] && a<pi_true[1]+ pi_true[2]){
+    s1[i] = 0
+    s2[i ] = 1
+    s3[i] = 0 }
+  
+  if (a >= pi_true[1]+ pi_true[2] ){
+    s1[i] = 0
+    s2[i] = 0
+    s3[i] = 1
+  }
+  i = i+1
+}
+
+M0 =1000
+M = 4000
+
+mu1 = 6
+mu2 = 7
+mu3 = 8
+
+sig1 = 4
+sig2 = 4
+sig3 =4
+
+
+
+#==========set priors==============
+
+#probability
+#priors for Dirichlet dist.
+e0 = 4
+
+#priors for mu and sig
+#mu
+b0 = 10
+B0 = 10000
+#sig
+c0 = 1
+C0 = 1
+
+# matrix to save parmaters and classificators
+param = {}
+s1mat = 0
+s2mat = 0
+s3mat = 0
+
+#MCMC Procedure
+i = 1
+MCMC = function(){#MCMC Procedure
+  i = 1
+  while (i <= M+M0){
+    
+    
+    #(a) sample parameters
+    #(a1) sample eta from posterior
+    eta <- as.numeric(rDirichlet.acomp(1,alpha=c(A=e0 + sum(s1),B=e0 + sum(s2),C=e0 + sum(s3))))
+    eta1 = eta[1]
+    eta2 = eta[2]
+    eta3 = eta[3]
+    
+    
+    #(a2) sample sig_k
+    sig1 = 1/rgamma(1, shape=c0 + 0.5*sum(s1), rate=C0 + 0.5*sum((y[s1==1]-mu1)^2) )
+    sig2 = 1/rgamma(1, shape=c0 + 0.5*sum(s2), rate=C0 + 0.5*sum((y[s2==1]-mu2)^2) )
+    sig3 = 1/rgamma(1, shape=c0 + 0.5*sum(s3), rate=C0 + 0.5*sum((y[s3==1]-mu3)^2) )
+    
+    #(a3) sample  mu_k
+    B1 = (1/(1/B0 + (1/sig1)*sum(s1)))
+    B2 = 1/(1/B0 + (1/sig2)*sum(s2))
+    B3 = 1/(1/B0 + (1/sig3)*sum(s3))
+if (sum(s1) > 0){
+    mu1 = rnorm(1,mean =B1*( sum(s1)*mean(y[s1==1])/sig1+ b0/B0)   , sd = sqrt(B1))
+} else{
+  return(NA)
+}
+    if(sum(s2) > 0){
+    mu2 = rnorm(1,mean =B2*( sum(s2)*mean(y[s2==1])/sig2+ b0/B0)  , sd = sqrt(B2) )
+    } else
+    {return(NA)}
+    if(sum(s3) > 0){
+    mu3 = rnorm(1,mean =B3*( sum(s3)*mean(y[s3==1])/sig3+ b0/B0) , sd = sqrt(B3) )
+    } else
+    {return(NA)}
+    #(b) classify 
+    
+    r = 1
+    
+    while (r <=n){
+      
+
+      x1 = 10000*eta1*(1/sqrt(2*pi*sig1))*exp(-((y[r]-mu1)^2)/(2*sig1))
+      x2 = 10000*eta2*(1/sqrt(2*pi*sig2))*exp(-((y[r]-mu2)^2)/(2*sig2))
+      x3 = 10000*eta3*(1/sqrt(2*pi*sig3))*exp(-((y[r]-mu3)^2)/(2*sig3))
+      a =  runif(1,0,1)
+   
+      if (a <(x1/(x1+x2+x3))){
+        s1[r] = 1
+        s2[r ] = 0
+        s3[r] = 0
+      }
+      if (a >= (x1/(x1+x2+x3)) && a<(x1+x2)/(x1+x2+x3)){
+        s1[r] = 0
+        s2[r ] = 1
+        s3[r] = 0 }
+      
+      if (a >= (x1+x2)/(x1+x2+x3)){
+        s1[r] = 0
+        s2[r] = 0
+        s3[r] = 1
+      }
+    
+      r = r+1
+    }
+    
+    #(c) permutation
+    eta_1 = eta1
+    eta_2 = eta2
+    eta_3 = eta3
+    sig_1 = sig1
+    sig_2 = sig2
+    sig_3 = sig3
+    mu_1 = mu1
+    mu_2 = mu2
+    mu_3 = mu3
+    s_1 = s1
+    s_2 = s2
+    s_3 = s3
+    
+    if (mu1 < mu2 && mu2 < mu3){ #123
+      eta1 = eta_1
+      eta2 = eta_2
+      eta3 = eta_3
+      sig1 = sig_1
+      sig2 = sig_2
+      sig3 = sig_3
+      mu1 = mu_1
+      mu2 = mu_2
+      mu3 = mu_3
+      s1 = s_1
+      s2 = s_2
+      s3 = s_3
+      
+    }
+    
+    if (mu2 < mu1 && mu1 < mu3){ #213
+      eta1 = eta_2
+      eta2 = eta_1
+      eta3 = eta_3
+      sig1 = sig_2
+      sig2 = sig_1
+      sig3 = sig_3
+      mu1 = mu_2
+      mu2 = mu_1
+      mu3 = mu_3
+      s1 = s_2
+      s2 = s_1
+      s3 = s_3
+      
+    }
+    if (mu1 < mu3 && mu3 < mu2){ #132
+      eta1 = eta_1
+      eta2 = eta_3
+      eta3 = eta_2
+      sig1 = sig_1
+      sig2 = sig_3
+      sig3 = sig_2
+      mu1 = mu_1
+      mu2 = mu_3
+      mu3 = mu_2
+      s1 = s_1
+      s2 = s_3
+      s3 = s_2
+      
+    }
+    if (mu3 < mu2 && mu2 < mu1){ #321
+      eta1 = eta_3
+      eta2 = eta_2
+      eta3 = eta_1
+      sig1 = sig_3
+      sig2 = sig_2
+      sig3 = sig_1
+      mu1 = mu_3
+      mu2 = mu_2
+      mu3 = mu_1
+      s1 = s_3
+      s2 = s_2
+      s3 = s_1
+      
+    }
+    if (mu2 < mu3 && mu3 < mu1){ #231
+      eta1 = eta_2
+      eta2 = eta_3
+      eta3 = eta_1
+      sig1 = sig_2
+      sig2 = sig_3
+      sig3 = sig_1
+      mu1 = mu_2
+      mu2 = mu_3
+      mu3 = mu_1
+      s1 = s_2
+      s2 = s_3
+      s3 = s_1
+      
+    }
+    if (mu3 < mu1 && mu1 < mu2){ #312
+      eta1 = eta_3
+      eta2 = eta_1
+      eta3 = eta_2
+      sig1 = sig_3
+      sig2 = sig_1
+      sig3 = sig_2
+      mu1 = mu_3
+      mu2 = mu_1
+      mu3 = mu_2
+      s1 = s_3
+      s2 = s_1
+      s3 = s_2
+      
+    }
+    
+    #Save output
+    if ( i > M0){
+      param = cbind(param, rbind(eta1,eta2,eta3, mu1,mu2,mu3, sig1,sig2,sig3))
+      s1mat = s1mat  + s1/M
+      s2mat = s2mat + s2/M
+      s3mat = s3mat + s3/M
+    }
+    i = i+1
+  }
+  return(param)
+}
+
+
+
+# Simulation
+
+## getting mse's and bias's 
+
+N = 100 #number of repetition
+mu_ematrix = matrix(0, N, 3)
+sigma_ematrix = matrix(0, N, 3)
+pi_ematrix = matrix(0, N, 3)
+
+bias_mu = rep(0, 3)
+bias_sigma = rep(0, 3)
+bias_pi = rep(0, 3)
+mse_mu = rep(0, 3)
+mse_sigma = rep(0, 3)
+mse_pi = rep(0, 3)
+
+#size of data using simulation
+n1 = 100 
+n2 = 1000
+
+#EM
+
+trial = foreach(i = 1:N,
+         .combine = 'c'   ) %dopar% {
+           library(distr)
+           library(dplyr)
+           #should set true value for simulation data
+  G1 = Norm(mu_true[1], sigma_true[1]) 
+  G2 = Norm(mu_true[2], sigma_true[2])
+  G3 = Norm(mu_true[3], sigma_true[3])
+  
+  GMM = UnivarMixingDistribution(G1, G2, G3, mixCoeff = pi_true)
+  
+  rmix = r(GMM)
+  
+  X = rmix(n2 or n1) 
+    
+  trial = EM(X, mu_init, sigma_init, pi_init, drawing = F) #should set initial value
+
+  data.frame(trial$mu, trial$sigma, trial$pi)
+
+}
+  
+for (i in 1:N){
+  mu_ematrix[i, ] = trial[[3*i-2]]
+  sigma_ematrix[i, ] = trial[[3*i-1]]
+  pi_ematrix[i, ] = trial[[3*i]]
+}
+for(i in 1:3){
+  bias_mu[i] = mean(mu_ematrix[complete.cases(mu_ematrix), i]) - mu_true[i]
+  mse_mu[i] = mean((mu_ematrix[complete.cases(mu_ematrix), i] - mu_true[i])^2)
+  bias_sigma[i] = mean(sigma_ematrix[complete.cases(sigma_ematrix), i]) - sigma_true[i]
+  mse_sigma[i] = mean((sigma_ematrix[complete.cases(sigma_ematrix), i] - sigma_true[i])^2)
+  bias_pi[i] = mean(pi_ematrix[complete.cases(pi_ematrix), i]) - pi_true[i]
+  mse_pi[i] = mean((pi_ematrix[complete.cases(pi_ematrix)] - pi_true[i])^2)
+}
+
+bias_mu
+bias_sigma
+bias_pi
+
+mse_mu
+mse_sigma
+mse_pi
+
+par(mfrow = c(2, 2))
+plot(mu_ematrix[,1], mu_ematrix[,2], xlab = "mu1", ylab = "mu2")
+plot(mu_ematrix[,1], mu_ematrix[,3], xlab = "mu1", ylab = "mu3")
+plot(mu_ematrix[,2], mu_ematrix[,3], xlab = "mu2", ylab = "mu3")
+
+
+#Gibbs sampling
+
+#==========set priors==============
+
+#probability
+#priors for Dirichlet dist.
+e0 = 4
+
+#priors for mu and sig
+#mu
+b0 = 10
+B0 = 10000
+#sig
+c0 = 1
+C0 = 1
+
+# matrix to save parmaters and classificators
+param = {}
+s1mat = 0
+s2mat = 0
+s3mat = 0
+
+
+param = MCMC()
+
+if( sum(is.na(param)) >0 ){
+  a = rep(NA,9)
+}
+else{
+a = rowMeans(param)
+}
+}
+
+
+for (i in 1:N){
+
+ 
+  pi_ematrix[i, ] = trial[(9*i-8):(9*i-6)]
+  mu_ematrix[i, ] = trial[(9*i-5):(9*i-3)]
+  sigma_ematrix[i, ] = sqrt(trial[(9*i-2):(9*i)])
+}
+
+for(i in 1:3){
+  bias_mu[i] = mean(mu_ematrix[complete.cases(mu_ematrix), i]) - mu_true[i]
+  mse_mu[i] = mean((mu_ematrix[complete.cases(mu_ematrix), i] - mu_true[i])^2)
+  bias_sigma[i] = mean(sigma_ematrix[complete.cases(sigma_ematrix), i]) - sigma_true[i]
+  mse_sigma[i] = mean((sigma_ematrix[complete.cases(sigma_ematrix), i] - sigma_true[i])^2)
+  bias_pi[i] = mean(pi_ematrix[complete.cases(pi_ematrix), i]) - pi_true[i]
+  mse_pi[i] = mean((pi_ematrix[complete.cases(pi_ematrix)] - pi_true[i])^2)
+}
+
+bias_mu
+bias_sigma
+bias_pi
+
+mse_mu
+mse_sigma
+mse_pi
+
+par(mfrow = c(2, 2))
+plot(mu_ematrix[,1], mu_ematrix[,2], xlab = "mu1", ylab = "mu2")
+plot(mu_ematrix[,1], mu_ematrix[,3], xlab = "mu1", ylab = "mu3")
+plot(mu_ematrix[,2], mu_ematrix[,3], xlab = "mu2", ylab = "mu3")
+
+
+# misclassification rate
+
+# data (used other generating functions to have data belong to certain group)
+
+X1 = rnorm(300, 0, 10)
+X2 = rnorm(300, 10, 10)
+X3 = rnorm(300, 20, 10)
+
+X = c(X1, X2, X3)
+
+
+mu_init = c(6,7,8)
+sigma_init = c(2,2,2)
+pi_init = c(1/3,1/3,1/3)
+
+###### EM misclassification rate ######
+# using gamma to estimate each observation's group.
+obj = EM(X, mu_init, sigma_init, pi_init, drawing = F)
+condt_prob = data.frame(obj$gamma_matrix)
+colnames(condt_prob) = c('group1', 'group2', 'group3')
+N = nrow(condt_prob)
+
+class_est = rep(0, N)
+
+for(i in 1:N){
+  class_est[i] = names(which.max(condt_prob[i, ]))
+}
+
+# misclassified observations
+G1_mis = numeric()
+G2_mis = numeric()
+G3_mis = numeric()
+
+for(f in 1:300){
+  G1_mis[f] = ifelse(class_est[f] == 'group1', 0, 1)
+}
+for(s in 301:600){
+  G2_mis[s-300] = ifelse(class_est[s] == 'group2', 0, 1)
+}
+for(t in 601:900){
+  G3_mis[t-600] = ifelse(class_est[t] == 'group3', 0, 1)
+}
+
+# misclassification rate of each groups
+G1_misrate = mean(G1_mis)*100
+G2_misrate = mean(G2_mis)*100
+G3_misrate = mean(G3_mis)*100
+G_misrate = c(G1_mis, G2_mis, G3_mis)
+total_misrate = mean(G_misrate) * 100
+
+misclassif_rate = (list(group1 = G1_misrate, group2 = G2_misrate,
+                        group3 = G3_misrate, total = total_misrate))
+misclassif_rate
+
+###### Gibbs misclassification rate ######
+# misclassification rate of each groups
+G1_misrate = mean(1-s1mat[1:(n0*pi_true[1])])*100
+G2_misrate = mean(1-s2mat[(n0*pi_true[1]+1):(n0*(pi_true[1] + pi_true[2]))])*100
+G3_misrate = mean(1-s3mat[(n0*(pi_true[1] + pi_true[2])+1):(n0)])*100
+
+misclassif_rate = (list(group1 = G1_misrate, group2 = G2_misrate,
+                        group3 = G3_misrate))
+misclassif_rate
+
+
+# Application and drawing gamma_plot
+
+#### EM ####
+data = y1[,5] #y1 is real-estate data
+
+mu_init = c(999, 1000, 1001)
+sigma_init = c(200, 200, 200)
+pi_init = c(1/3, 1/3, 1/3)
+
+
+trial = EM(data, mu_init, sigma_init, pi_init, drawing = T)
+trial$mu
+trial$sigma
+trial$pi
+  
+a <- rnorm(100000*( trial$pi[1]), ( trial$mu[1]), ( trial$sigma[1])) 
+b <- rnorm(100000*( trial$pi[2]), ( trial$mu[2]), ( trial$sigma[2])) 
+c <- rnorm(100000*( trial$pi[3]), ( trial$mu[3]), ( trial$sigma[3]))
+d <- c(a, b, c)
+df <- data.frame(d, id = as.factor(c(rep(1,length(a)), rep(2,length(b)), rep(3,length(c))))) 
+ggplot(df) +
+  stat_density(aes(x=d, alpha = id), position = "stack", geom = "line", show.legend = F, color = "red") +
+  stat_density(aes(x=d,  linetype = id), position = "identity", geom = "line")+
+  scale_alpha_manual(values = c(1,0,0,0))
+ggplot(y1, mapping = aes(x = y1$`금액/면적`)) + geom_density() + xlab("제곱미터당 가격") + ggtitle("서울시 2021년 아파트 매매가격")
+
+
+#### Gibbs ####
+
+y = y1[,5]
+
+pi_true = c(1/3,1/3,1/3)
+
+#===============Set initial values============
+
+#number of observations
+n = length(y)
+#when the number of mixture is 3
+k = 3
+i = 1
+s1 = rep(0,n)
+s2 = rep(0,n)
+s3 = rep(0,n)
+while (i <=n){
+  a =  runif(1,0,1)
+  if (a <pi_true[1]){
+    s1[i] = 1
+    s2[i ] = 0
+    s3[i] = 0
+  }
+  if (a >=pi_true[1] && a<pi_true[1]+ pi_true[2]){
+    s1[i] = 0
+    s2[i ] = 1
+    s3[i] = 0 }
+  
+  if (a >= pi_true[1]+ pi_true[2] ){
+    s1[i] = 0
+    s2[i] = 0
+    s3[i] = 1
+  }
+  i = i+1
+}
+
+M0 =10000
+M = 10000
+
+mu1 = 1000
+mu2 = 1000
+mu3 = 1000
+
+sig1 = 200
+sig2 = 200
+sig3 =200
+
+
+
+#==========set priors==============
+
+#probability
+#priors for Dirichlet dist.
+e0 = 4
+
+#priors for mu and sig
+#mu
+b0 = 1000
+B0 = 1000000
+#sig
+c0 = 1
+C0 = 1
+
+# matrix to save parmaters and classificators
+param = {}
+s1mat = 0
+s2mat = 0
+s3mat = 0
+
+#MCMC Procedure
+i = 1
+while (i <= M+M0){
+  
+  
+  #(a) sample parameters
+  #(a1) sample eta from posterior
+  eta <- as.numeric(rDirichlet.acomp(1,alpha=c(A=e0 + sum(s1),B=e0 + sum(s2),C=e0 + sum(s3))))
+  eta1 = eta[1]
+  eta2 = eta[2]
+  eta3 = eta[3]
+
+  
+  #(a2) sample sig_k
+    sig1 = 1/rgamma(1, shape=c0 + 0.5*sum(s1), rate=C0 + 0.5*sum((y[s1==1]-mu1)^2) )
+  sig2 = 1/rgamma(1, shape=c0 + 0.5*sum(s2), rate=C0 + 0.5*sum((y[s2==1]-mu2)^2) )
+  sig3 = 1/rgamma(1, shape=c0 + 0.5*sum(s3), rate=C0 + 0.5*sum((y[s3==1]-mu3)^2) )
+
+    #(a3) sample  mu_k
+  B1 = (1/(1/B0 + (1/sig1)*sum(s1)))
+  B2 = 1/(1/B0 + (1/sig2)*sum(s2))
+  B3 = 1/(1/B0 + (1/sig3)*sum(s3))
+    mu1 = rnorm(1,mean =B1*( sum(s1)*mean(y[s1==1])/sig1+ b0/B0)   , sd = sqrt(B1))
+  mu2 = rnorm(1,mean =B2*( sum(s2)*mean(y[s2==1])/sig2+ b0/B0)  , sd = sqrt(B2) )
+  mu3 = rnorm(1,mean =B3*( sum(s3)*mean(y[s3==1])/sig3+ b0/B0) , sd = sqrt(B3) )
+
+  #(b) classify 
+  
+  r = 1
+  
+
+  while (r <=n){
+    x1 = 10000*eta1*(1/sqrt(2*pi*sig1))*exp(-((y[r]-mu1)^2)/(2*sig1))
+x2 = 10000*eta2*(1/sqrt(2*pi*sig2))*exp(-((y[r]-mu2)^2)/(2*sig2))
+  x3 = 10000*eta3*(1/sqrt(2*pi*sig3))*exp(-((y[r]-mu3)^2)/(2*sig3))
+    
+    a =  runif(1,0,1)
+    if (a <(x1/(x1+x2+x3))){
+      s1[r] = 1
+      s2[r ] = 0
+      s3[r] = 0
+    }
+    if (a >= (x1/(x1+x2+x3)) && a<(x1+x2)/(x1+x2+x3)){
+      s1[r] = 0
+      s2[r ] = 1
+      s3[r] = 0 }
+    
+    if (a >= (x1+x2)/(x1+x2+x3)){
+      s1[r] = 0
+      s2[r] = 0
+      s3[r] = 1
+    }
+    r = r+1
+  }
+  
+  
+  #(c) permutation
+  eta_1 = eta1
+  eta_2 = eta2
+  eta_3 = eta3
+  sig_1 = sig1
+  sig_2 = sig2
+  sig_3 = sig3
+  mu_1 = mu1
+  mu_2 = mu2
+  mu_3 = mu3
+  s_1 = s1
+  s_2 = s2
+  s_3 = s3
+  
+  if (mu1 < mu2 && mu2 < mu3){ #123
+    eta1 = eta_1
+    eta2 = eta_2
+    eta3 = eta_3
+    sig1 = sig_1
+    sig2 = sig_2
+    sig3 = sig_3
+    mu1 = mu_1
+    mu2 = mu_2
+    mu3 = mu_3
+    s1 = s_1
+    s2 = s_2
+    s3 = s_3
+    
+  }
+  
+  if (mu2 < mu1 && mu1 < mu3){ #213
+    eta1 = eta_2
+    eta2 = eta_1
+    eta3 = eta_3
+    sig1 = sig_2
+    sig2 = sig_1
+    sig3 = sig_3
+    mu1 = mu_2
+    mu2 = mu_1
+    mu3 = mu_3
+    s1 = s_2
+    s2 = s_1
+    s3 = s_3
+    
+  }
+  if (mu1 < mu3 && mu3 < mu2){ #132
+    eta1 = eta_1
+    eta2 = eta_3
+    eta3 = eta_2
+    sig1 = sig_1
+    sig2 = sig_3
+    sig3 = sig_2
+    mu1 = mu_1
+    mu2 = mu_3
+    mu3 = mu_2
+    s1 = s_1
+    s2 = s_3
+    s3 = s_2
+    
+  }
+  if (mu3 < mu2 && mu2 < mu1){ #321
+    eta1 = eta_3
+    eta2 = eta_2
+    eta3 = eta_1
+    sig1 = sig_3
+    sig2 = sig_2
+    sig3 = sig_1
+    mu1 = mu_3
+    mu2 = mu_2
+    mu3 = mu_1
+    s1 = s_3
+    s2 = s_2
+    s3 = s_1
+    
+  }
+  if (mu2 < mu3 && mu3 < mu1){ #231
+    eta1 = eta_2
+    eta2 = eta_3
+    eta3 = eta_1
+    sig1 = sig_2
+    sig2 = sig_3
+    sig3 = sig_1
+    mu1 = mu_2
+    mu2 = mu_3
+    mu3 = mu_1
+    s1 = s_2
+    s2 = s_3
+    s3 = s_1
+    
+  }
+  if (mu3 < mu1 && mu1 < mu2){ #312
+    eta1 = eta_3
+    eta2 = eta_1
+    eta3 = eta_2
+    sig1 = sig_3
+    sig2 = sig_1
+    sig3 = sig_2
+    mu1 = mu_3
+    mu2 = mu_1
+    mu3 = mu_2
+    s1 = s_3
+    s2 = s_1
+    s3 = s_2
+    
+  }
+  
+  #Save output
+  if ( i > M0){
+    param = cbind(param, rbind(eta1,eta2,eta3, mu1,mu2,mu3, sig1,sig2,sig3))
+    s1mat = s1mat  + s1/M
+    s2mat = s2mat + s2/M
+    s3mat = s3mat + s3/M
+  }
+  print(i)
+  i = i+1
+
+}
+
+#Posterior Mean 
+Postmean = rowMeans(param)
+Postmean
+#Posterior standard deviation
+apply(param[,-1], 1, sd)
+#Posterior Confidence region (95%)
+apply(param[,-1], 1, quantile, probs = c(0.025,0.975))
+
+library(ggplot2)
+library(dplyr)
+library("ggrepel")
+smat = data.frame(s1mat,s2mat,s3mat,y1$자치구명, y1$`금액/면적`)
+
+smat1 <- smat %>%
+  group_by(smat$y1.자치구명) %>%
+summarise(
+  VAR1 = mean(s1mat),
+  VAR2 = mean(s2mat),
+  VAR3 = mean(s3mat))
+
+smat2 <- data.frame(x = c(smat1$`smat$y1.자치구명`, smat1$`smat$y1.자치구명`, smat1$`smat$y1.자치구명`),y = c(rep(1,25),rep(2,25),rep(3,25)),z = c(smat1$VAR1,smat1$VAR2, smat1$VAR3))
+smat2$y <- as.factor(smat2$y)
+
+ggplot(smat2, aes(y, z, label =x)) +
+  geom_point(colour = "blue") +  geom_text_repel() + xlab("Clusters") + ylab("Mean Probabilities") + ggtitle("구별 클러스터의 추정 확률 ")
+
+
+a <- rnorm(100000*(Postmean[1]), (Postmean[4]), sqrt(Postmean[7])) 
+b <- rnorm(100000*(Postmean[2]), (Postmean[5]), sqrt(Postmean[8])) 
+c <- rnorm(100000*(Postmean[3]), (Postmean[6]), sqrt(Postmean[9]))
+d <- c(a, b, c)
+df <- data.frame(d, id = as.factor(c(rep(1,length(a)), rep(2,length(b)), rep(3,length(c))))) 
+ggplot(df) +
+  stat_density(aes(x=d, alpha = id), position = "stack", geom = "line", show.legend = F, color = "red") +
+  stat_density(aes(x=d,  linetype = id), position = "identity", geom = "line")+
+  scale_alpha_manual(values = c(1,0,0,0))
+ggplot(y1, mapping = aes(x = y1$`금액/면적`)) + geom_density() + xlab("제곱미터당 가격") + ggtitle("서울시 2021년 아파트 매매가격")
+
+par(mfrow = c(3, 3))
+#graph for group 1
+plot(param[4,1:M], type = 'l', col = 'red', ann = F)
+title('mu in group 1', xlab = 'iteration', ylab = 'estimated value')
+plot(param[7,1:M], type = 'l', col = 'blue', ann = F)
+title('sigma in group 1', xlab = 'iteration', ylab = 'estimated value')
+plot(param[1,1:M], type = 'l', col = 'green', ann = F)
+title('pi in group 1', xlab = 'iteration', ylab = 'estimated value')
+#graph for group2
+plot(param[5,1:M], type = 'l', col = 'red', ann = F)
+title('mu in group 2', xlab = 'iteration', ylab = 'estimated value')
+plot(param[8,1:M], type = 'l', col = 'blue', ann = F)
+title('sigma in group 2', xlab = 'iteration', ylab = 'estimated value')
+plot(param[2,1:M], type = 'l', col = 'green', ann = F)
+title('pi in group 2', xlab = 'iteration', ylab = 'estimated value')
+#graph for group 3
+plot(param[6,1:M], type = 'l', col = 'red', ann = F)
+title('mu in group 3', xlab = 'iteration', ylab = 'estimated value')
+plot(param[9,1:M], type = 'l', col = 'blue', ann = F)
+title('sigma in group 3', xlab = 'iteration', ylab = 'estimated value')
+plot(param[3,1:M], type = 'l', col = 'green', ann = F)
+title('pi in group 3', xlab = 'iteration', ylab = 'estimated value')
