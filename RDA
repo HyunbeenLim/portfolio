@@ -1,0 +1,199 @@
+# Simulation
+
+## load the packages
+library(klaR)
+library(caret)
+library(methods)
+library(sortinghat)
+
+## function for 1) splitting test/train set & 2) calculating rda/lda/qda misclassification error
+trial <- function(n=200,p=6,ex=1){ # specify n (sample), p, experiment number (defualt n=200,p=6,ex=1)
+  
+  # randomly draw total n class labels (Friedman(1989) p.170)
+  class <- sample(c(1,2,3), n, replace=TRUE)  
+  sample_sizes <- as.vector(table(class))
+  
+  # simulate data using simdata_friedman()
+  data <- simdata_friedman(n = sample_sizes, p = p, experiment = ex, seed = NULL)
+  data = as.data.frame(data)
+  
+  # train/test split
+  train.index = createDataPartition(data$y, p = 0.8, list = FALSE)
+  data.tr = data[train.index, ]
+  data.te = data[-train.index, ]
+  y.tr = data.tr$y
+  y.te = data.te$y
+  
+  # rda
+  rda.fit = rda(y ~ ., data = data.tr)
+  reg.par = rda.fit$regularization  # regularization parameter
+  rda.predict = predict(rda.fit, data.te)
+  r.test.e = mean(rda.predict$class != y.te)
+  # lda
+  lda.fit = rda(y ~ .,data = data.tr,
+                regularization = c(gamma = 0, lambda = 1))
+  lda.predict = predict(lda.fit, data.te)
+  l.test.e = mean(lda.predict$class != y.te)
+  # qda
+  qda.fit = rda(y ~., data = data.tr,
+                regularization = c(gamma = 0, lambda = 0))
+  qda.predict = predict(qda.fit, data.te)
+  q.test.e = mean(qda.predict$class != y.te)
+  
+  # Comparing results of each methods
+  return(list(error=c(l.test.e, q.test.e, r.test.e), reg.par = reg.par))
+}
+
+
+## mean misclassification error with repeating N=100 times
+N=100  # repeat N times
+t.error <- matrix(0, N, 3)
+reg.par <- matrix(0, N, 2)
+colnames(t.error) <- c("lda", "qda", "rda")
+colnames(reg.par) <- c("gamma", "lambda")
+
+set.seed(3)  # set seed
+for (i in 1:N){
+  try <- trial()  # put n, p, ex in trial()
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)  # mean misclassification error
+colMeans(reg.par)  # regularization parameter (gamma/lambda)
+
+
+## 1. Equal Covariance Matrices
+# 1) n=200, p=6, ex=1
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=6, ex=1)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+# 2) n=200, p=10, ex=1
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=10, ex=1)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+# 3) n=200, p=20, ex=1
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=20, ex=1)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+# 4) n=200, p=30, ex=1
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=30, ex=1)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+
+
+## 2. Unequal Covariance Matrices
+# 1) n=200, p=6, ex=2
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=6, ex=2)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+# 2) n=200, p=10, ex=2
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=10, ex=2)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+# 3) n=200, p=20, ex=2
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=20, ex=2)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par) 
+# 4) n=200, p=30, ex=2
+set.seed(7)
+for (i in 1:N){
+  try <- trial(n=200, p=30, ex=2)
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error)
+colMeans(reg.par)
+
+
+
+# Application
+
+## load the package
+library(klaR)
+library(caret)
+library(methods)
+library(sortinghat)
+library(mlbench)
+
+
+## Sonar data
+data(Sonar)
+
+
+## function for 1) splitting test/train set & 2) calculating rda/lda/qda misclassification error
+trial <- function(){
+  train.index = createDataPartition(Sonar$Class, p = 0.7, list = FALSE) #train/test split
+  So.tr = Sonar[train.index, ]
+  So.te = Sonar[-train.index, ]
+  Class.te = So.te$Class
+  
+  #rda
+  rda.fit = rda(Class ~ ., data = So.tr)
+  reg.par = rda.fit$regularization
+  rda.predict = predict(rda.fit, So.te)
+  r.test.e = mean(rda.predict$class != Class.te)
+  #lda
+  lda.fit = rda(Class ~ .,data = So.tr,
+              regularization = c(gamma = 0, lambda = 1))
+  lda.predict = predict(lda.fit, So.te)
+  l.test.e = mean(lda.predict$class != Class.te)
+  #qda
+  qda.fit = rda(Class ~., data = So.tr,
+              regularization = c(gamma = 0, lambda = 0))
+  qda.predict = predict(qda.fit, So.te)
+  q.test.e = mean(qda.predict$class != Class.te)
+  # Comparing results of each methods
+  return(list(error=c(l.test.e, q.test.e, r.test.e), reg.par = reg.par))
+}
+
+
+## mean misclassification error with repeating N=100 times
+N=100 # repeat N times
+t.error <- matrix(0, N, 3)
+reg.par <- matrix(0, N, 2)
+colnames(t.error) <- c("lda", "qda", "rda")
+colnames(reg.par) <- c("gamma", "lambda")
+
+set.seed(7)  # set seed
+for (i in 1:N){
+  try <- trial()
+  t.error[i,] <- try$error
+  reg.par[i,] <- try$reg.par
+}
+colMeans(t.error) # mean misclassification error
+colMeans(reg.par) # regularization parameter (gamma/lambda)
