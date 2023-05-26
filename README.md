@@ -381,7 +381,7 @@ GLM과 동일하게 g에 로짓함수를 사용했습니다.
 
 $\beta^* = argmin_{\beta}\left[g\left(E[Y|X]\right) - \beta_0 - \Sigma_{i=1}^p \beta_i X_i\right] + \lambda \left[\alpha_1 \Sigma_{i=1}^p ||\beta_i|| + \alpha_2 \Sigma_{i=1}^p ||\beta_i||^2 \right], \alpha_1 + \alpha_2 = 1$
 
-초초모수 $\lambda, \alpha_1$의 선택은 k-fold cross-validation을 진행하였고, train : test = 7 : 3으로 나누어 train 데이터를 10개의 fold로 나누었습니다.
+초모수 $\lambda, \alpha_1$의 선택은 k-fold cross-validation을 진행하였고, train : test = 7 : 3으로 나누어 train 데이터를 10개의 fold로 나누었습니다.
 
 이후 Grid search를 실시하기 위해 사용한 초모수의 범위는 다음과 같습니다.
 
